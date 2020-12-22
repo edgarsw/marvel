@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +17,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import test.albo.mx.marvel.model.Colorist;
 import test.albo.mx.marvel.model.Comic;
@@ -31,7 +31,6 @@ import test.albo.mx.marvel.service.WriterService;
 
 @SpringBootApplication
 @Slf4j
-@Component
 public class MarvelApplication {
 
     @Autowired
@@ -56,22 +55,35 @@ public class MarvelApplication {
         SpringApplication.run(MarvelApplication.class, args);
     }
 
-    @Scheduled(cron = "0 48 10 * * *")
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder.build();
-    }    
-    
+    }
+
     @Bean
     public CommandLineRunner run(RestTemplate restTemplate) throws Exception {
-        saveServices(restTemplate);
+        
+        long standUp = 86400000L;//24 hours
+        
+        Timer timer = new Timer();
+
+        TimerTask task = new TimerTask() {
+            int tic = 0;
+
+            @Override
+            public void run() {
+                saveServices(restTemplate);
+            }
+        };
+
+        timer.schedule(task, 0, standUp);
+
         return args -> {
 
         };
     }
 
-    
-    private void saveServices(RestTemplate restTemplate) {
+    public void saveServices(RestTemplate restTemplate) {
         String object = restTemplate.getForObject(
                 "https://gateway.marvel.com/v1/public/characters?" + credentials, String.class);
 
@@ -100,13 +112,13 @@ public class MarvelApplication {
                     JsonNode resultUri = dataUri.get("results");
 
                     resultUri.forEach(elementUri -> {
-                        
+
                         Comic comic = new Comic();
                         comic.setIdCharacter(person.getIdCharacter());
                         comic.setIdComicService(elementUri.get("id").asInt());
                         comic.setTitle(elementUri.get("title").asText());
                         comicService.ins(comic);
-                        
+
                         JsonNode creatorsObj = elementUri.get("creators");
                         JsonNode itemsObj = creatorsObj.get("items");
                         itemsObj.forEach(colaborator -> {

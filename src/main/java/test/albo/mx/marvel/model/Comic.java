@@ -11,14 +11,14 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.Data;
 
 /**
+ * Entidad comic
  *
- * @author edgar
+ * @version 1.0, 21/12/20
+ * @author Edgar Salinas
  */
 @Data
 @Entity
@@ -35,5 +35,7 @@ public class Comic implements Serializable{
     private Integer idComicService;
     private String title;
     @Column(name = "idcharacter")
-    private Integer idCharacter;   
+    private Integer idCharacter;
+    
+    private String name;
 }

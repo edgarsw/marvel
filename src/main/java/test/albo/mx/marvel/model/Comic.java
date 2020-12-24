@@ -12,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import lombok.Data;
 
 /**
@@ -37,5 +38,6 @@ public class Comic implements Serializable{
     @Column(name = "idcharacter")
     private Integer idCharacter;
     
+    @Column(insertable = false, updatable = false)
     private String name;
 }
